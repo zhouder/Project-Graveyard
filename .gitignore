@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-electron/
+release/
+coverage/
+.playwright-cli/
+output/
+*.log
+.DS_Store
