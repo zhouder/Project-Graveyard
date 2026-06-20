@@ -6,7 +6,7 @@
 
 Project Graveyard is a completely offline desktop memorial for abandoned software projects. It scans only folders you explicitly select, identifies projects that have gone quiet, and lets you document a funeral, cause of death, and epitaph. A project can always be revived later.
 
-![Project Graveyard cemetery](docs/cemetery.png)
+![Project Graveyard cemetery in English daylight mode](docs/cemetery-en-day.png)
 
 ## Highlights
 
@@ -22,7 +22,7 @@ Project Graveyard is a completely offline desktop memorial for abandoned softwar
 - Exports the cemetery as PNG and generates annual reports.
 - Includes 15 demo projects for screenshots and product tours without touching real folders.
 
-![Project archive](docs/project-archive.png)
+![Project archive in English daylight mode](docs/project-archive-en-day.png)
 
 ## Install
 

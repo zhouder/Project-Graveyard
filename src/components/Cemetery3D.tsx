@@ -21,6 +21,7 @@ interface GraveObject {
   body: THREE.Mesh<THREE.ExtrudeGeometry, THREE.MeshStandardMaterial>;
   project: GraveProject;
   restingY: number;
+  restingRotationY: number;
 }
 
 function text(language: Language, zh: string, en: string) {
@@ -202,7 +203,7 @@ function makeGrave(project: GraveProject, language: Language, theme: Theme, ston
   group.scale.setScalar(scale);
   const deterministicTilt = ((project.id.charCodeAt(0) + project.name.length) % 7 - 3) * 0.007;
   group.rotation.y = deterministicTilt;
-  return { group, body, project, restingY: 0 };
+  return { group, body, project, restingY: 0, restingRotationY: deterministicTilt };
 }
 
 function makeStatusSign(status: GraveProject['status'], label: string, direction: 1 | -1, theme: Theme) {
@@ -361,7 +362,6 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(0, 0);
-    const targetCameraOffset = new THREE.Vector2(0, 0);
     let hoveredId: string | undefined;
     let hoveredStatus: GraveProject['status'] | undefined;
     let disposed = false;
@@ -371,7 +371,6 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
       const bounds = renderer.domElement.getBoundingClientRect();
       pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
       pointer.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
-      targetCameraOffset.set(pointer.x, pointer.y);
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(interactive, false)[0];
       const nextId = hit?.object.userData.projectId as string | undefined;
@@ -391,7 +390,6 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
       if (project) onSelectRef.current(project);
     }
     function leave() {
-      targetCameraOffset.set(0, 0);
       hoveredId = undefined;
       hoveredStatus = undefined;
       setHovered(undefined);
@@ -416,14 +414,14 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
     function render() {
       if (disposed) return;
       const elapsed = (performance.now() - startedAt) / 1000;
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, baseCamera.x + targetCameraOffset.x * 0.9, 0.035);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, baseCamera.y + targetCameraOffset.y * 0.32, 0.035);
+      camera.position.copy(baseCamera);
       camera.lookAt(lookAt);
       for (const grave of graves) {
         const isHovered = grave.project.id === hoveredId;
-        const idle = Math.sin(elapsed * 1.1 + grave.project.name.length) * 0.012;
-        grave.group.position.y = THREE.MathUtils.lerp(grave.group.position.y, grave.restingY + idle + (isHovered ? 0.2 : 0), 0.1);
-        grave.group.rotation.y = THREE.MathUtils.lerp(grave.group.rotation.y, isHovered ? Math.sin(elapsed * 3.2) * 0.045 : Math.sin(elapsed * .65 + grave.project.name.length) * .006, 0.08);
+        const hoverLift = isHovered ? 0.2 + Math.sin(elapsed * 3.2) * 0.018 : 0;
+        const hoverTurn = isHovered ? Math.sin(elapsed * 3.2) * 0.052 : 0;
+        grave.group.position.y = THREE.MathUtils.lerp(grave.group.position.y, grave.restingY + hoverLift, 0.1);
+        grave.group.rotation.y = THREE.MathUtils.lerp(grave.group.rotation.y, grave.restingRotationY + hoverTurn, 0.08);
         grave.body.material.emissiveIntensity = THREE.MathUtils.lerp(grave.body.material.emissiveIntensity, isHovered ? 0.24 : grave.project.status === 'alive' ? 0.18 : 0, 0.1);
       }
       renderer.render(scene, camera);
