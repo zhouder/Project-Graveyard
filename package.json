@@ -17,7 +17,7 @@
     "lint": "eslint src electron vite.config.ts vitest.config.ts --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dist:win": "npm run build && electron-builder --win nsis",
+    "dist:win": "npm run build && electron-builder --win nsis --publish never",
     "dist:dir": "npm run build && electron-builder --dir"
   },
   "dependencies": {
