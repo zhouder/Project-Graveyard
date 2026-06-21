@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { formatDate } from '../lib/domain';
-import { causeLabel } from '../lib/i18n';
+import { causeLabel, tr } from '../lib/i18n';
 import type { AppSettings, GraveProject } from '../shared/types';
 
 type Language = AppSettings['language'];
@@ -14,6 +14,8 @@ interface Cemetery3DProps {
   onSelect: (project: GraveProject) => void;
   onStatusFilter: (status: GraveProject['status']) => void;
   statusCounts: Record<GraveProject['status'], number>;
+  showcase?: boolean;
+  onExitShowcase?: () => void;
 }
 
 interface GraveObject {
@@ -143,12 +145,17 @@ function graveColor(project: GraveProject, theme: Theme) {
 function makeGrave(project: GraveProject, language: Language, theme: Theme, stoneNoise: THREE.Texture): GraveObject {
   const group = new THREE.Group();
   const shape = new THREE.Shape();
-  shape.moveTo(-1.08, 0);
-  shape.lineTo(-1.12, 1.92);
-  shape.bezierCurveTo(-1.12, 2.45, -0.78, 2.77, -0.35, 2.84);
-  shape.lineTo(0.52, 2.76);
-  shape.bezierCurveTo(0.92, 2.7, 1.12, 2.38, 1.1, 1.96);
-  shape.lineTo(1.08, 0);
+  const isAlive = project.status === 'alive';
+  const isSleeping = project.status === 'sleeping';
+  const shoulder = isAlive ? 1.56 : 1.92;
+  const crown = isAlive ? 2.25 : isSleeping ? 2.68 : 2.84;
+  const halfWidth = isAlive ? 1 : 1.08;
+  shape.moveTo(-halfWidth, 0);
+  shape.lineTo(-halfWidth - 0.04, shoulder);
+  shape.bezierCurveTo(-halfWidth - 0.04, crown - 0.38, -0.72, crown - 0.08, -0.32, crown);
+  shape.lineTo(isAlive ? 0.32 : 0.52, crown - 0.08);
+  shape.bezierCurveTo(0.86, crown - 0.14, halfWidth + 0.04, crown - 0.46, halfWidth + 0.02, shoulder + 0.04);
+  shape.lineTo(halfWidth, 0);
   shape.closePath();
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: 0.52, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.1, bevelThickness: 0.08, curveSegments: 10 });
   geometry.center();
@@ -195,9 +202,66 @@ function makeGrave(project: GraveProject, language: Language, theme: Theme, ston
     new THREE.PlaneGeometry(2.18, 1.64),
     new THREE.MeshStandardMaterial({ map: inscription, transparent: true, roughness: 1, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 }),
   );
-  plaque.position.set(0, 1.5, 0.365);
+  plaque.scale.setScalar(isAlive ? 0.88 : 1);
+  plaque.position.set(0, isAlive ? 1.22 : isSleeping ? 1.42 : 1.5, 0.365);
   plaque.userData.projectId = project.id;
   group.add(plaque);
+
+  if (isAlive) {
+    const leafMaterial = new THREE.MeshStandardMaterial({ color: theme === 'day' ? 0x79a24d : 0x8fc55a, emissive: 0x355a24, emissiveIntensity: theme === 'day' ? 0.12 : 0.4, roughness: 0.78 });
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.08, 0.58, 8), leafMaterial);
+    stem.position.set(0, 2.3, 0.08);
+    stem.userData.projectId = project.id;
+    group.add(stem);
+    for (const [x, y, rotation] of [[-0.18, 2.38, -0.65], [0.18, 2.53, 0.65]] as const) {
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), leafMaterial);
+      leaf.scale.set(1.35, 0.48, 0.65);
+      leaf.position.set(x, y, 0.08);
+      leaf.rotation.z = rotation;
+      leaf.userData.projectId = project.id;
+      group.add(leaf);
+    }
+    const planter = new THREE.Mesh(new THREE.BoxGeometry(2.18, 0.34, 0.72), new THREE.MeshStandardMaterial({ color: theme === 'day' ? 0x6f8c4e : 0x496b3d, roughness: 0.9 }));
+    planter.position.set(0, 0.48, 0.31);
+    planter.userData.projectId = project.id;
+    planter.castShadow = true;
+    group.add(planter);
+  } else if (isSleeping) {
+    group.rotation.z = -0.055;
+    const webPoints = [
+      new THREE.Vector3(0.48, 2.35, 0.37), new THREE.Vector3(1.02, 2.04, 0.37),
+      new THREE.Vector3(0.48, 2.35, 0.37), new THREE.Vector3(0.98, 2.48, 0.37),
+      new THREE.Vector3(0.69, 2.23, 0.37), new THREE.Vector3(0.87, 2.4, 0.37),
+      new THREE.Vector3(0.69, 2.23, 0.37), new THREE.Vector3(0.9, 2.13, 0.37),
+    ];
+    const web = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(webPoints), new THREE.LineBasicMaterial({ color: theme === 'day' ? 0x4c514a : 0xc4cabd, transparent: true, opacity: 0.58 }));
+    web.userData.projectId = project.id;
+    group.add(web);
+    for (const [index, radius] of [0.12, 0.09, 0.065].entries()) {
+      const sleepOrb = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.026, 6, 12, Math.PI * 1.65), new THREE.MeshBasicMaterial({ color: 0xe3bd66 }));
+      sleepOrb.position.set(0.68 + index * 0.22, 2.78 + index * 0.2, 0.12);
+      sleepOrb.rotation.z = -0.35;
+      sleepOrb.userData.projectId = project.id;
+      group.add(sleepOrb);
+    }
+  } else {
+    const crackPoints = [
+      new THREE.Vector3(-0.2, 2.55, 0.38), new THREE.Vector3(-0.05, 2.28, 0.38),
+      new THREE.Vector3(-0.05, 2.28, 0.38), new THREE.Vector3(-0.22, 2.05, 0.38),
+      new THREE.Vector3(-0.05, 2.28, 0.38), new THREE.Vector3(0.15, 2.12, 0.38),
+    ];
+    const cracks = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(crackPoints), new THREE.LineBasicMaterial({ color: 0x20252a }));
+    cracks.userData.projectId = project.id;
+    group.add(cracks);
+    const dryMaterial = new THREE.MeshStandardMaterial({ color: 0x725d3a, roughness: 1 });
+    for (const x of [-1.1, 1.05]) {
+      const dryGrass = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.56, 5), dryMaterial);
+      dryGrass.position.set(x, 0.36, 0.2);
+      dryGrass.rotation.z = x < 0 ? -0.28 : 0.28;
+      dryGrass.userData.projectId = project.id;
+      group.add(dryGrass);
+    }
+  }
 
   const scale = 0.96 + Math.min(0.15, Math.log10(Math.max(project.sizeBytes, 1)) / 60);
   group.scale.setScalar(scale);
@@ -245,7 +309,7 @@ function makeStatusSign(status: GraveProject['status'], label: string, direction
   return { group, texture };
 }
 
-export default function Cemetery3D({ projects, language, theme, onSelect, onStatusFilter, statusCounts }: Cemetery3DProps) {
+export default function Cemetery3D({ projects, language, theme, onSelect, onStatusFilter, statusCounts, showcase = false, onExitShowcase }: Cemetery3DProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const onSelectRef = useRef(onSelect);
   const onStatusFilterRef = useRef(onStatusFilter);
@@ -451,13 +515,24 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
   }, [projects, language, theme, statusCounts.alive, statusCounts.sleeping, statusCounts.dead]);
 
   return (
-    <div className={`cinematic-cemetery ${theme}`}>
+    <div className={`cinematic-cemetery ${theme} ${showcase ? 'showcase' : ''}`}>
       <div className="cinematic-backdrop" />
       <div className="cartoon-clouds cloud-bank-one" /><div className="cartoon-clouds cloud-bank-two" />
       <div className="cartoon-canopy canopy-left" /><div className="cartoon-canopy canopy-right" />
       <div className="cartoon-fireflies">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
       <div className="cinematic-grade" />
       <div ref={hostRef} className="webgl-stage" />
+      {showcase && <div className="showcase-poster">
+        <p>{tr(language, 'showcase.kicker')}</p>
+        <h1>{tr(language, 'showcase.title')}</h1>
+        <span>{tr(language, 'showcase.tagline')}</span>
+        <div className="showcase-stats">
+          <button onClick={() => { onStatusFilter('alive'); onExitShowcase?.(); }}><i className="alive" /><b>{statusCounts.alive}</b><small>{text(language, '存活', 'ALIVE')}</small></button>
+          <button onClick={() => { onStatusFilter('sleeping'); onExitShowcase?.(); }}><i className="sleeping" /><b>{statusCounts.sleeping}</b><small>{text(language, '沉睡', 'DORMANT')}</small></button>
+          <button onClick={() => { onStatusFilter('dead'); onExitShowcase?.(); }}><i className="dead" /><b>{statusCounts.dead}</b><small>{text(language, '死亡', 'BURIED')}</small></button>
+        </div>
+      </div>}
+      {showcase && <button type="button" className="exit-showcase" onClick={onExitShowcase}>{tr(language, 'showcase.exit').toUpperCase()} <kbd>Esc</kbd></button>}
       <div className="cinema-topline"><span>{text(language, '项目纪念园', 'PROJECT MEMORIAL GARDEN')}</span><i /> <b>{projects.length.toString().padStart(3, '0')}</b></div>
       <div className="cinema-help">{text(language, '移动指针探索 · 点击墓碑打开档案', 'MOVE TO EXPLORE · SELECT A STONE TO OPEN')}</div>
       {hovered && <div className="cinema-inspector"><span>{hovered.technologies[0] ?? 'PROJECT'}</span><strong>{hovered.name}</strong><p>{formatDate(hovered.bornAt)} <i>→</i> {hovered.death ? formatDate(hovered.death.date) : text(language, '尚未确认', 'PRESENT')}</p></div>}
