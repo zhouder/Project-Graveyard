@@ -6,7 +6,7 @@
 
 Project Graveyard is a completely offline desktop memorial for abandoned software projects. It scans only folders you explicitly select, identifies projects that have gone quiet, and lets you document a funeral, cause of death, and epitaph. A project can always be revived later.
 
-![Project Graveyard cemetery in English daylight mode](docs/cemetery-en-day.png)
+![Project Graveyard Showcase Mode in English night theme](docs/showcase-en-night.png)
 
 ## Highlights
 
@@ -16,13 +16,17 @@ Project Graveyard is a completely offline desktop memorial for abandoned softwar
 - Shows birth time, last activity, dormant days, size, TODO/FIXME count, Git state, and last commit.
 - Filters by status, year, technology, size, and dormant duration.
 - Provides a Three.js cemetery and a detailed project inventory view.
+- Includes a full-screen Showcase Mode for README captures, demo GIFs, and launch posts.
+- Gives alive, sleeping, and buried projects distinct silhouettes and scene decorations.
 - Arranges active, dormant, and deceased projects in separate rows, with up to five graves per row.
 - Includes day/night themes and instant Chinese/English UI switching.
-- Supports funerals, epitaphs, revival, archive moves, and safe moves to the system recycle bin.
+- Turns funerals into a themed death-certificate flow with live tombstone previews and localized epitaph ideas.
+- Keeps first-run controls simple, with filters and scan tuning available under Advanced Controls.
+- Supports revival, archive moves, and safe moves to the system recycle bin.
 - Exports the cemetery as PNG and generates annual reports.
 - Includes 15 demo projects for screenshots and product tours without touching real folders.
 
-![Project archive in English daylight mode](docs/project-archive-en-day.png)
+![Archive Ledger in English daylight mode](docs/archive-ledger-en-day.png)
 
 ## Install
 
