@@ -50,15 +50,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          $endpoint = "/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}"
-          $result = & gh api $endpoint 2>&1
-          $exitCode = $LASTEXITCODE
-          $resultText = $result | Out-String
-          if ($exitCode -eq 0) {
+          $uri = "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}"
+          Add-Type -AssemblyName System.Net.Http
+          $client = [System.Net.Http.HttpClient]::new()
+          $client.DefaultRequestHeaders.Authorization = [System.Net.Http.Headers.AuthenticationHeaderValue]::new("Bearer", $env:GH_TOKEN)
+          $client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json")
+          $client.DefaultRequestHeaders.UserAgent.ParseAdd("Project-Graveyard-Release-Workflow")
+          $null = $client.DefaultRequestHeaders.TryAddWithoutValidation("X-GitHub-Api-Version", "2022-11-28")
+          $response = $client.GetAsync($uri).GetAwaiter().GetResult()
+          $statusCode = [int]$response.StatusCode
+          $client.Dispose()
+          if ($statusCode -eq 200) {
             throw "Release ${{ github.ref_name }} already exists. Refusing to overwrite it."
           }
-          if ($resultText -notmatch "HTTP 404") {
-            throw "Could not confirm that release ${{ github.ref_name }} is new: $resultText"
+          if ($statusCode -ne 404) {
+            throw "Could not confirm that release ${{ github.ref_name }} is new. GitHub returned HTTP $statusCode."
           }
       - run: npm ci
       - run: npm test
