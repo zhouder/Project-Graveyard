@@ -253,9 +253,9 @@ function FuneralModal({ project, language, onClose, onSubmit }: { project: Grave
             <small>{causeLabel(language, cause)}</small>
           </aside>
         </div>
-        <div className="epitaph-suggestions"><p>{tr(language, 'funeral.suggestions')}</p><div>{epitaphSuggestions(language).map((suggestion) => <button type="button" key={suggestion} onClick={() => setEpitaph(suggestion)}>{suggestion}</button>)}</div></div>
+        <div className="epitaph-suggestions"><p>{tr(language, 'funeral.suggestions')}</p><div>{epitaphSuggestions(language).map((suggestion) => <button type="button" key={suggestion} className={epitaph === suggestion ? 'selected' : ''} aria-pressed={epitaph === suggestion} onClick={() => setEpitaph(suggestion)}>{suggestion}</button>)}</div></div>
         <p className="funeral-warning"><span aria-hidden="true">i</span>{tr(language, 'funeral.warning')}</p>
-        <div className="modal-actions"><button type="button" className="button ghost" onClick={onClose}>{tr(language, 'funeral.cancel')}</button><button className="button funeral" type="submit">{tr(language, 'funeral.confirm')}</button></div>
+        <div className="modal-actions"><button type="button" className="button ghost" onClick={onClose}>{tr(language, 'funeral.cancel')}</button><button className="button funeral ceremony-button" type="submit">{tr(language, 'funeral.confirm')}</button></div>
       </form>
     </div>
   );

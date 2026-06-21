@@ -586,8 +586,219 @@ input[type="range"] { width: 100%; height: 3px; margin-top: 12px; accent-color: 
 [lang="zh-CN"] .content-head .title-line h1, [lang="zh-CN"] .memorial-card blockquote { font-family: "STKaiti", "KaiTi", "Microsoft YaHei UI", serif; }
 [lang="en-US"] .content-head .title-line h1 { font-family: "Cooper Black", "Arial Rounded MT Bold", "SF Pro Display", serif; }
 
+/* Launch-ready cemetery composition and motion polish. */
+.cinematic-stars {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  opacity: .38;
+  background-image:
+    radial-gradient(circle at 14% 14%, #fff 0 1px, transparent 1.8px),
+    radial-gradient(circle at 34% 9%, #ddecff 0 1px, transparent 1.8px),
+    radial-gradient(circle at 53% 18%, #fff8c7 0 1px, transparent 1.7px),
+    radial-gradient(circle at 72% 8%, #fff 0 1px, transparent 1.8px),
+    radial-gradient(circle at 88% 22%, #dceaff 0 1px, transparent 1.8px);
+  background-size: 320px 210px, 410px 260px, 360px 240px, 460px 290px, 390px 230px;
+  animation: star-breathe 5.8s ease-in-out infinite alternate;
+}
+.celestial-glow {
+  position: absolute;
+  z-index: -1;
+  top: -72px;
+  right: 19%;
+  width: 270px;
+  height: 270px;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: .32;
+  background: radial-gradient(circle, #fffbd77a 0 9%, #c9e6ff25 25%, transparent 67%);
+  animation: moon-glow 6.5s ease-in-out infinite alternate;
+}
+@keyframes star-breathe { 45% { opacity: .22; } 100% { opacity: .48; } }
+@keyframes moon-glow { to { opacity: .44; transform: scale(1.06); } }
+
+.cinematic-cemetery.showcase::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #0207051f, transparent 28%, transparent 72%, #02070559), radial-gradient(ellipse at center, transparent 53%, #01040338 100%);
+}
+.showcase-poster {
+  top: clamp(34px, 5.4vh, 62px);
+  left: clamp(34px, 4.5vw, 74px);
+  max-width: min(650px, 56vw);
+}
+.showcase-poster > p { animation: poster-rise .65s .06s both cubic-bezier(.2,.8,.2,1); }
+.showcase-poster h1 { animation: poster-rise .78s .12s both cubic-bezier(.16,.82,.2,1); }
+.showcase-poster > span { animation: poster-rise .72s .22s both cubic-bezier(.2,.8,.2,1); }
+@keyframes poster-rise { from { opacity: 0; transform: translate3d(0,16px,0); } }
+.cinematic-cemetery.showcase .webgl-stage canvas { transform-origin: 50% 60%; animation: cemetery-camera-in .9s .08s both cubic-bezier(.16,.82,.2,1); }
+@keyframes cemetery-camera-in { from { opacity: 0; transform: scale(.985) translate3d(0,8px,0); } }
+
+.showcase-stats {
+  position: fixed;
+  top: clamp(86px, 11vh, 118px);
+  right: clamp(20px, 2.3vw, 38px);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  pointer-events: auto;
+}
+.showcase-stats button {
+  width: 116px;
+  min-width: 0;
+  min-height: 45px;
+  grid-template-columns: 7px 28px 1fr;
+  grid-template-rows: 1fr;
+  column-gap: 8px;
+  padding: 7px 10px;
+  border-color: #c7d5bc26;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #08120d87, #101b14a8);
+  box-shadow: inset 0 1px #ffffff0b, 0 7px 18px #0003;
+  backdrop-filter: blur(8px);
+  animation: stats-enter .55s both cubic-bezier(.2,.85,.25,1);
+}
+.showcase-stats button:nth-child(1) { animation-delay: .34s; }
+.showcase-stats button:nth-child(2) { animation-delay: .42s; }
+.showcase-stats button:nth-child(3) { animation-delay: .5s; }
+.showcase-stats button:hover { transform: translate3d(-3px,0,0) scale(1.02); background: #17261ba8; }
+.showcase-stats i { grid-row: 1; }
+.showcase-stats b { font-size: 17px; line-height: 1; }
+.showcase-stats small { font-size: 7px; letter-spacing: .1em; }
+@keyframes stats-enter { from { opacity: 0; transform: translate3d(12px,0,0) scale(.97); } }
+
+.exit-showcase {
+  border-color: #d6e1cb26;
+  background: #07100b80;
+  box-shadow: 0 5px 16px #0002;
+  transition: color .18s, background .18s, border-color .18s, transform .18s;
+}
+.exit-showcase:hover { transform: translateY(-1px); border-color: #cbd8bf55; }
+.showcase .cinema-help {
+  z-index: 6;
+  bottom: 18px;
+  border: 1px solid #9fb88b52;
+  background: #07110ba8;
+  box-shadow: 0 7px 20px #0004;
+  font-size: 8px;
+  animation: help-enter .55s .62s both ease-out;
+}
+@keyframes help-enter { from { opacity: 0; transform: translate3d(-50%,8px,0); } }
+.cinema-inspector { transform-origin: 100% 100%; animation: inspector-in .22s cubic-bezier(.2,.85,.25,1); }
+@keyframes inspector-in { from { opacity: 0; transform: translate3d(8px,7px,0) scale(.97); } }
+
+/* Consistent tactile feedback throughout Explore mode. */
+.button, .icon-button, .utility-toggle, .demo-toggle, .showcase-toggle, .ledger-open, .game-select-trigger {
+  transition-timing-function: cubic-bezier(.2,.8,.2,1);
+}
+.button:active, .icon-button:active, .utility-toggle:active, .demo-toggle:active, .showcase-toggle:active, .ledger-open:active, .game-select-trigger:active {
+  transform: translateY(2px) scale(.985);
+  filter: brightness(.94);
+}
+.drawer-backdrop, .modal-backdrop { animation: veil-in .2s ease-out both; }
+@keyframes veil-in { from { opacity: 0; } }
+.detail-drawer { animation: drawer-arrive .28s cubic-bezier(.16,.82,.22,1) both; }
+@keyframes drawer-arrive { from { opacity: 0; transform: translate3d(30px,0,0) scale(.992); } }
+.modal { animation: modal-arrive .24s cubic-bezier(.16,.82,.22,1) both; transform-origin: 50% 46%; }
+@keyframes modal-arrive { from { opacity: 0; transform: translate3d(0,8px,0) scale(.98); } }
+
+.advanced-controls { interpolate-size: allow-keywords; }
+.advanced-controls:not([open]) > .advanced-body { display: block; height: 0; padding-block: 0; opacity: 0; overflow: hidden; pointer-events: none; }
+.advanced-controls > .advanced-body { height: auto; opacity: 1; overflow: clip; transition: height .28s cubic-bezier(.2,.8,.2,1), opacity .18s ease, padding .28s cubic-bezier(.2,.8,.2,1); }
+.advanced-controls[open] > summary { background: #ffffff05; }
+.empty-stone { animation: empty-stone-idle 4.8s ease-in-out infinite; }
+.empty-stone::after {
+  content: "";
+  position: absolute;
+  left: -30px;
+  bottom: -16px;
+  width: 48px;
+  height: 24px;
+  opacity: .75;
+  background: radial-gradient(ellipse at 15% 100%, #638044 0 18%, transparent 20%), radial-gradient(ellipse at 48% 100%, #7e9b55 0 21%, transparent 23%), radial-gradient(ellipse at 82% 100%, #55743d 0 18%, transparent 20%);
+  transform-origin: 50% 100%;
+  animation: empty-grass-sway 3.7s ease-in-out infinite alternate;
+}
+@keyframes empty-stone-idle { 50% { transform: translateY(-4px); } }
+@keyframes empty-grass-sway { to { transform: skewX(5deg); } }
+
+.archive-ledger .project-table tbody tr { transition: transform .16s ease, background .16s ease, box-shadow .16s ease; }
+.archive-ledger .project-table tbody tr:hover, .archive-ledger .project-table tbody tr:focus-visible { transform: translateY(-1px); outline: none; background: linear-gradient(90deg,#2b3d2e,#1a281e); box-shadow: inset 5px 0 #a4c472, 0 8px 18px #0002; }
+
+/* The certificate should feel signed and sealed without delaying submission. */
+.funeral-modal { animation: certificate-arrive .36s cubic-bezier(.16,.84,.22,1) both; }
+@keyframes certificate-arrive { from { opacity: 0; transform: translate3d(0,12px,0) scale(.976); filter: brightness(.82); } 65% { filter: brightness(1.04); } }
+.preview-stone::before {
+  content: "";
+  position: absolute;
+  left: -24px;
+  right: -24px;
+  bottom: -20px;
+  height: 34px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #26382a 0 44%, transparent 68%);
+  box-shadow: 0 11px 18px #0005;
+}
+.preview-stone::after {
+  content: "";
+  position: absolute;
+  right: -17px;
+  bottom: -3px;
+  width: 46px;
+  height: 34px;
+  background: radial-gradient(ellipse at 15% 100%, #6e844d 0 18%, transparent 20%), radial-gradient(ellipse at 52% 100%, #829954 0 21%, transparent 23%), radial-gradient(ellipse at 86% 100%, #566f41 0 18%, transparent 20%);
+  transform: rotate(6deg);
+}
+.epitaph-suggestions button.selected, .epitaph-suggestions button[aria-pressed="true"] {
+  border-color: #a9c979;
+  background: linear-gradient(#456347,#314b35);
+  color: #fff;
+  box-shadow: inset 0 1px #ffffff1c, 0 0 0 2px #9dc46b24;
+  transform: translateY(-1px);
+}
+.ceremony-button { position: relative; overflow: hidden; isolation: isolate; }
+.ceremony-button::after {
+  content: "✦";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  opacity: 0;
+  color: #fff3c5;
+  font-size: 27px;
+  text-shadow: 0 0 17px #ffe9a8;
+  transform: translate(-50%,-50%) scale(.35) rotate(-18deg);
+  transition: opacity .12s, transform .2s cubic-bezier(.2,1.5,.3,1);
+}
+.ceremony-button:active { box-shadow: inset 0 0 18px #fff2c64d, 0 0 20px #d6c27b42; }
+.ceremony-button:active::after { opacity: .9; transform: translate(-50%,-50%) scale(1) rotate(0); }
+
+@media (max-width: 1366px), (max-height: 800px) {
+  .showcase-poster { top: 32px; left: 42px; max-width: 590px; }
+  .showcase-poster h1 { font-size: clamp(43px, 5vw, 62px); }
+  .showcase-poster > span { margin-top: 11px; font-size: 15px; }
+  .showcase-stats { top: 72px; right: 18px; gap: 6px; }
+  .showcase-stats button { width: 108px; min-height: 41px; padding-block: 6px; }
+  .showcase .cinema-help { bottom: 11px; }
+  .exit-showcase { top: 16px; right: 18px; }
+}
+@media (max-width: 1280px), (max-height: 740px) {
+  .showcase-poster { top: 26px; left: 32px; max-width: 535px; }
+  .showcase-poster > p { margin-bottom: 7px; font-size: 8px; }
+  .showcase-poster h1 { font-size: 47px; }
+  .showcase-poster > span { margin-top: 9px; font-size: 14px; }
+  .showcase-stats { top: 64px; right: 14px; }
+  .showcase-stats button { width: 101px; min-height: 38px; }
+  .showcase-stats b { font-size: 15px; }
+  .showcase .cinema-help { font-size: 7px; }
+}
+
 @media (max-width: 1160px) { .title-status small { display:none; }.title-status button { padding:0 7px; }.title-status { gap:3px; }.content-head { padding-inline:20px; }.search{width:210px} }
-@media (prefers-reduced-motion: reduce) { .cinematic-backdrop,.cartoon-clouds,.cartoon-canopy,.cartoon-fireflies i { animation:none !important; } }
+@media (prefers-reduced-motion: reduce) { .cinematic-backdrop,.cinematic-stars,.celestial-glow,.cartoon-clouds,.cartoon-canopy,.cartoon-fireflies i,.empty-stone,.empty-stone::after { animation:none !important; } }
 
 @media (max-width: 1160px) {
   .app-shell { grid-template-columns: 220px minmax(0, 1fr); }
