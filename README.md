@@ -28,11 +28,17 @@ Project Graveyard is a completely offline desktop memorial for abandoned softwar
 
 ![Archive Ledger in English daylight mode](docs/archive-ledger-en-day.png)
 
-## Install
+## Download
 
 ### Windows 10/11
 
-Download `Project-Graveyard-<version>-x64.exe` from [GitHub Releases](https://github.com/zhouder/Project-Graveyard/releases) and run the installer.
+Download the latest Windows build from [GitHub Releases](https://github.com/zhouder/Project-Graveyard/releases). Windows users should choose the newest versioned x64 installer, for example:
+
+`Project-Graveyard-0.1.1-x64.exe`
+
+Changes merged into `main` are not automatically published as a desktop release. A matching `v*` tag, such as `v0.1.1`, is required to publish a new installer.
+
+### Run from source
 
 To run from source:
 
@@ -124,12 +130,16 @@ Build the Windows NSIS installer:
 npm run dist:win
 ```
 
-Artifacts are written to `release/`. Pushing a `v*` tag triggers the GitHub Actions release workflow, which runs tests, lint, build, and Windows packaging before attaching the installer to a GitHub Release.
+Artifacts are written to `release/`. Pushing a `v*` tag that matches the version in `package.json` triggers the official GitHub Release build. The workflow runs tests, lint, build, and Windows packaging before attaching the versioned installer to the Release.
+
+The workflow can also be run manually from `main`. Manual runs upload a temporary Actions artifact for verification and do not create or replace a GitHub Release.
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
+
+See the [release checklist](docs/release.md) before publishing.
 
 Electron and Chromium account for most of the installer size. A substantially smaller installer would require a runtime migration such as Tauri with WebView2.
 

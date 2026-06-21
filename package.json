@@ -1,6 +1,6 @@
 {
   "name": "project-graveyard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "给未完成的项目一个体面的结局。",
   "main": "dist-electron/electron/main.js",
   "author": "Project Graveyard contributors",
