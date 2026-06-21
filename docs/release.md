@@ -25,23 +25,28 @@ Do not run `npm version patch` again after `package.json` already reports `0.1.1
 ## Publish v0.1.1
 
 1. Confirm `node -p "require('./package.json').version"` prints `0.1.1`.
-2. Create the matching tag `v0.1.1`.
-3. Push `main` and the tag.
-4. Wait for the GitHub Actions **Release** workflow to finish.
-5. Verify the GitHub Release contains `Project-Graveyard-0.1.1-x64.exe`.
-6. Download and smoke test the installer.
+2. Confirm that tag and Release `v0.1.1` do not already exist.
+3. Create the matching tag `v0.1.1`.
+4. Push `main` and the tag.
+5. Wait for the GitHub Actions **Release** workflow to finish.
+6. Verify the GitHub Release contains `Project-Graveyard-0.1.1-x64.exe`.
+7. Download and smoke test the installer.
 
 ```bash
 git checkout main
 git pull
 
 node -p "require('./package.json').version"
+if git ls-remote --exit-code --tags origin refs/tags/v0.1.1; then
+  echo "Tag v0.1.1 already exists; stop."
+  exit 1
+fi
 git tag v0.1.1
 git push origin main
 git push origin v0.1.1
 ```
 
-The workflow rejects a tag that does not match `package.json`, so a `v0.1.1` tag must point to code whose package version is `0.1.1`.
+The workflow rejects a tag that does not match `package.json`, so a `v0.1.1` tag must point to code whose package version is `0.1.1`. It also stops instead of updating an existing `v0.1.1` Release.
 
 ## Manual verification build
 
