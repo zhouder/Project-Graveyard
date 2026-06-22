@@ -114,9 +114,7 @@ function createInscription(project: GraveProject, language: Language, theme: The
   context.font = '900 72px "Cooper Black", "Arial Rounded MT Bold", "STKaiti", "KaiTi", serif';
   context.strokeStyle = 'rgba(35,26,17,.65)';
   context.lineWidth = 7;
-  const statusText = text(language,
-    project.status === 'alive' ? '存活' : project.status === 'sleeping' ? '沉睡' : '已安葬',
-    project.status === 'alive' ? 'ACTIVE' : project.status === 'sleeping' ? 'DORMANT' : 'BURIED');
+  const statusText = tr(language, project.status === 'alive' ? 'showcase.alive' : project.status === 'sleeping' ? 'showcase.dormant' : 'showcase.buried');
   context.strokeText(statusText, 512, 675, 650);
   context.fillStyle = '#f5ead1';
   context.fillText(statusText, 512, 675, 650);
@@ -126,19 +124,33 @@ function createInscription(project: GraveProject, language: Language, theme: The
   return texture;
 }
 
-function createWoodLabel(label: string, direction: 1 | -1) {
+function createWoodLabel(label: string, count: number, direction: 1 | -1) {
   const canvas = document.createElement('canvas');
   canvas.width = 768;
   canvas.height = 180;
   const context = canvas.getContext('2d')!;
-  context.fillStyle = '#f0d38d';
-  context.font = '900 104px "Cooper Black", "Arial Rounded MT Bold", "STKaiti", "KaiTi", serif';
-  context.textAlign = 'center';
+  const centerX = direction === 1 ? 350 : 420;
+  const labelFont = '900 92px "Cooper Black", "Arial Rounded MT Bold", "STKaiti", "KaiTi", serif';
+  const countFont = '800 70px "Segoe UI", "SF Mono", "Cascadia Mono", Consolas, sans-serif';
+  const countText = `· ${count}`;
+  context.font = labelFont;
+  const labelWidth = Math.min(context.measureText(label).width, 430);
+  context.font = countFont;
+  const countWidth = Math.min(context.measureText(countText).width, 145);
+  let cursorX = centerX - (labelWidth + 24 + countWidth) / 2;
+  context.textAlign = 'left';
   context.textBaseline = 'middle';
   context.lineWidth = 8;
   context.strokeStyle = '#2b1a10';
-  context.strokeText(label, direction === 1 ? 350 : 420, 90, 590);
-  context.fillText(label, direction === 1 ? 350 : 420, 90, 590);
+  context.fillStyle = '#f0d38d';
+  context.font = labelFont;
+  context.strokeText(label, cursorX, 90, 430);
+  context.fillText(label, cursorX, 90, 430);
+  cursorX += labelWidth + 24;
+  context.font = countFont;
+  context.lineWidth = 6;
+  context.strokeText(countText, cursorX, 92, 145);
+  context.fillText(countText, cursorX, 92, 145);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -294,7 +306,7 @@ function makeGrave(project: GraveProject, language: Language, theme: Theme, ston
   return { group, body, outline, project, restingY: 0, restingRotationY: deterministicTilt, restingScale: scale, entranceDelay: 0 };
 }
 
-function makeStatusSign(status: GraveProject['status'], label: string, direction: 1 | -1, theme: Theme) {
+function makeStatusSign(status: GraveProject['status'], label: string, count: number, direction: 1 | -1, theme: Theme) {
   const group = new THREE.Group();
   const shape = new THREE.Shape();
   if (direction === 1) {
@@ -316,7 +328,7 @@ function makeStatusSign(status: GraveProject['status'], label: string, direction
   outline.position.y = 1.35;
   outline.userData.status = status;
   group.add(outline);
-  const texture = createWoodLabel(label, direction);
+  const texture = createWoodLabel(label, count, direction);
   const lettering = new THREE.Mesh(new THREE.PlaneGeometry(2.42, 0.58), new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 }));
   lettering.position.set(0, 1.35, 0.22);
   lettering.renderOrder = 4;
@@ -436,15 +448,15 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
       rowCursor += Math.ceil(section.projects.length / columns);
     }
 
-    const signData: Array<[GraveProject['status'], string]> = [
-      ['alive', `${text(language, '存活', 'ACTIVE')}  ${statusCounts.alive}`],
-      ['sleeping', `${text(language, '沉睡', 'DORMANT')}  ${statusCounts.sleeping}`],
-      ['dead', `${text(language, '死亡', 'DECEASED')}  ${statusCounts.dead}`],
+    const signData: Array<[GraveProject['status'], string, number]> = [
+      ['alive', tr(language, 'showcase.alive'), statusCounts.alive],
+      ['sleeping', tr(language, 'showcase.dormant'), statusCounts.sleeping],
+      ['dead', tr(language, 'showcase.buried'), statusCounts.dead],
     ];
-    for (const [status, label] of signData) {
+    for (const [status, label, count] of signData) {
       const anchor = statusAnchors.get(status);
       if (!anchor) continue;
-      const sign = makeStatusSign(status, label, 1, theme);
+      const sign = makeStatusSign(status, label, count, 1, theme);
       sign.group.position.copy(anchor);
       sign.group.scale.setScalar(0.98);
       const restingX = sign.group.position.x;
@@ -581,15 +593,15 @@ export default function Cemetery3D({ projects, language, theme, onSelect, onStat
         <h1>{tr(language, 'showcase.title')}</h1>
         <span>{tr(language, 'showcase.tagline')}</span>
         <div className="showcase-stats">
-          <button onClick={() => { onStatusFilter('alive'); onExitShowcase?.(); }}><i className="alive" /><b>{statusCounts.alive}</b><small>{text(language, '存活', 'ALIVE')}</small></button>
-          <button onClick={() => { onStatusFilter('sleeping'); onExitShowcase?.(); }}><i className="sleeping" /><b>{statusCounts.sleeping}</b><small>{text(language, '沉睡', 'DORMANT')}</small></button>
-          <button onClick={() => { onStatusFilter('dead'); onExitShowcase?.(); }}><i className="dead" /><b>{statusCounts.dead}</b><small>{text(language, '死亡', 'BURIED')}</small></button>
+          <button onClick={() => { onStatusFilter('alive'); onExitShowcase?.(); }}><i className="alive" /><b>{statusCounts.alive}</b><small>{tr(language, 'showcase.alive')}</small></button>
+          <button onClick={() => { onStatusFilter('sleeping'); onExitShowcase?.(); }}><i className="sleeping" /><b>{statusCounts.sleeping}</b><small>{tr(language, 'showcase.dormant')}</small></button>
+          <button onClick={() => { onStatusFilter('dead'); onExitShowcase?.(); }}><i className="dead" /><b>{statusCounts.dead}</b><small>{tr(language, 'showcase.buried')}</small></button>
         </div>
       </div>}
       {showcase && <button type="button" className="exit-showcase" onClick={onExitShowcase}>{tr(language, 'showcase.exit').toUpperCase()} <kbd>Esc</kbd></button>}
-      <div className="cinema-topline"><span>{text(language, '项目纪念园', 'PROJECT MEMORIAL GARDEN')}</span><i /> <b>{projects.length.toString().padStart(3, '0')}</b></div>
-      <div className="cinema-help">{text(language, '移动指针探索 · 点击墓碑打开档案', 'MOVE TO EXPLORE · SELECT A STONE TO OPEN')}</div>
-      {hovered && <div className="cinema-inspector"><span>{hovered.technologies[0] ?? 'PROJECT'}</span><strong>{hovered.name}</strong><p>{formatDate(hovered.bornAt)} <i>→</i> {hovered.death ? formatDate(hovered.death.date) : text(language, '尚未确认', 'PRESENT')}</p></div>}
+      <div className="cinema-topline"><span>{tr(language, 'showcase.sceneTitle')}</span><i /> <b>{projects.length.toString().padStart(3, '0')}</b></div>
+      <div className="cinema-help">{tr(language, 'showcase.help')}</div>
+      {hovered && <div className="cinema-inspector"><span>{hovered.technologies[0] ?? tr(language, 'showcase.project')}</span><strong>{hovered.name}</strong><p>{formatDate(hovered.bornAt)} <i>→</i> {hovered.death ? formatDate(hovered.death.date) : tr(language, 'showcase.present')}</p></div>}
       {webglError && <div className="webgl-error">{text(language, '当前设备无法启用 3D 渲染，请更新显卡驱动。', '3D rendering is unavailable. Please update your graphics driver.')}</div>}
       {projects.length === 0 && <div className="webgl-empty">{text(language, '没有符合筛选条件的项目', 'NO PROJECTS MATCH THE CURRENT FILTERS')}</div>}
     </div>
